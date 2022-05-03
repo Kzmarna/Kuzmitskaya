@@ -22,4 +22,7 @@ public interface StudentDao {
     List<Dates> getAllDates();
     List<Dates> getDatesByStudent(Student student);
     void deleteVisit(int dateId, int studentId);
+    Groups getGroupById(int groupId);
+    void deleteStudent(Student student);
+    Student getStudentByName(Student student);
 }

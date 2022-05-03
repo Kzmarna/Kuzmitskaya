@@ -87,4 +87,19 @@ public class StudentServiceImpl implements StudentService{
     public void deleteVisit(int dateId, int studentId) {
         studentDao.deleteVisit(dateId, studentId);
     }
+
+    @Override
+    public Groups getGroupById(int groupId) {
+        return studentDao.getGroupById(groupId);
+    }
+
+    @Override
+    public void deleteStudent(Student student) {
+        studentDao.deleteStudent(student);
+    }
+
+    @Override
+    public Student getStudentByName(Student student) {
+        return studentDao.getStudentByName(student);
+    }
 }
