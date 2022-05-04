@@ -22,7 +22,7 @@ public class MainFrameListener extends JFrame {
 
         JFrame frame = new JFrame("Lectures");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        frame.setSize(new Dimension(1500, 800));
+        frame.setSize(new Dimension(1500, 600));
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
@@ -37,15 +37,15 @@ public class MainFrameListener extends JFrame {
 
         JPanel dateOfVisit = new JPanel();
         dateOfVisit.setBorder(BorderFactory.createTitledBorder("Добавить дату посещения"));
-        dateOfVisit.setPreferredSize(new Dimension(350, 250));
+        dateOfVisit.setPreferredSize(new Dimension(350, 200));
 
         JPanel studentsByDate = new JPanel();
         studentsByDate.setBorder(BorderFactory.createTitledBorder("Список студентов по дате посещения"));
-        studentsByDate.setPreferredSize(new Dimension(350, 250));
+        studentsByDate.setPreferredSize(new Dimension(350, 200));
 
         JPanel groupsModification = new JPanel();
         groupsModification.setBorder(BorderFactory.createTitledBorder("Добавление/Удаление группы"));
-        groupsModification.setPreferredSize(new Dimension(350, 250));
+        groupsModification.setPreferredSize(new Dimension(350, 200));
 
         JPanel studentsModification = new JPanel();
         studentsModification.setBorder(BorderFactory.createTitledBorder("Добавление/Удаление студента"));
@@ -161,7 +161,7 @@ public class MainFrameListener extends JFrame {
             JScrollPane scrollPane = new JScrollPane(students);
             scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            scrollPane.setPreferredSize(new Dimension(600, 700));
+            scrollPane.setPreferredSize(new Dimension(600, 600));
             scrollPane.setMaximumSize(scrollPane.getSize());
             scrollPane.setMinimumSize(scrollPane.getSize());
             studentsList.removeAll();
@@ -261,10 +261,16 @@ public class MainFrameListener extends JFrame {
                 }
             }
         };
+        studentsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        studentsTable.getColumnModel().getColumn(0).setPreferredWidth(200);
+        for (int i = 1; i < studentsTable.getColumnCount(); i++) {
+            studentsTable.getColumnModel().getColumn(i).setPreferredWidth(80);
+        }
+        studentsTable.setPreferredScrollableViewportSize(new Dimension(600, 700));
         studentsTable.setAutoCreateRowSorter(true);
         JScrollPane scrollPane = new JScrollPane(studentsTable);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setPreferredSize(new Dimension(600, 700));
         scrollPane.setMaximumSize(scrollPane.getSize());
         scrollPane.setMinimumSize(scrollPane.getSize());
