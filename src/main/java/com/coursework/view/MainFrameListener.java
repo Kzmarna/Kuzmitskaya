@@ -1,9 +1,12 @@
 package com.coursework.view;
 
-import com.coursework.model.Dates;
-import com.coursework.model.Groups;
+import com.coursework.model.DateLecture;
+import com.coursework.model.Group;
 import com.coursework.model.Student;
 import com.coursework.model.Visit;
+import com.coursework.service.FileService;
+import com.coursework.service.FileServiceImpl;
+import com.coursework.service.StudentService;
 import com.coursework.service.StudentServiceImpl;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -11,45 +14,78 @@ import org.jdatepicker.impl.UtilDateModel;
 
 import javax.swing.*;
 import java.awt.*;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Properties;
 
 public class MainFrameListener extends JFrame {
+
+    private final FileService fileService;
+    private final StudentService studentService;
+    private Group currentGroup;
+
     public MainFrameListener() {
+        fileService = FileServiceImpl.getInstance();
+        studentService = StudentServiceImpl.getInstance();
+
         Container container = new Container();
         container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
 
         JFrame frame = new JFrame("Lectures");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        frame.setSize(new Dimension(1500, 600));
+        frame.setPreferredSize(new Dimension(1300, 1000));
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
 
         JPanel studentsList = new JPanel();
-        studentsList.setPreferredSize(new Dimension(700, 800));
+        studentsList.setSize(new Dimension(700, 700));
 
         JPanel groupsButtons = new JPanel();
+        groupsButtons.setMinimumSize(new Dimension(700, 100));
+        groupsButtons.setMaximumSize(new Dimension(700, 100));
 
         JPanel modification = new JPanel();
         modification.setLayout(new BoxLayout(modification, BoxLayout.Y_AXIS));
+        modification.setMinimumSize(new Dimension(400, 700));
+        modification.setMaximumSize(new Dimension(400, 700));
 
         JPanel dateOfVisit = new JPanel();
+        dateOfVisit.setLayout(new FlowLayout(FlowLayout.CENTER));
         dateOfVisit.setBorder(BorderFactory.createTitledBorder("Добавить дату посещения"));
-        dateOfVisit.setPreferredSize(new Dimension(350, 200));
+        dateOfVisit.setPreferredSize(new Dimension(350, 150));
 
         JPanel studentsByDate = new JPanel();
+        studentsByDate.setLayout(new FlowLayout(FlowLayout.CENTER));
         studentsByDate.setBorder(BorderFactory.createTitledBorder("Список студентов по дате посещения"));
-        studentsByDate.setPreferredSize(new Dimension(350, 200));
+        studentsByDate.setPreferredSize(new Dimension(350, 150));
 
         JPanel groupsModification = new JPanel();
+        groupsModification.setLayout(new FlowLayout(FlowLayout.CENTER));
         groupsModification.setBorder(BorderFactory.createTitledBorder("Добавление/Удаление группы"));
-        groupsModification.setPreferredSize(new Dimension(350, 200));
+        groupsModification.setPreferredSize(new Dimension(350, 150));
 
         JPanel studentsModification = new JPanel();
+        studentsModification.setLayout(new FlowLayout(FlowLayout.CENTER));
         studentsModification.setBorder(BorderFactory.createTitledBorder("Добавление/Удаление студента"));
-        studentsModification.setPreferredSize(new Dimension(350, 250));
+        studentsModification.setPreferredSize(new Dimension(350, 150));
+
+        JPanel filePanel = new JPanel();
+        JButton fileButton = new JButton("Сохранить в файл");
+        fileButton.addActionListener(e -> {
+            if (currentGroup != null) {
+                File file = fileService.createFile(studentsList);
+                fileService.writeDataToWord(file, studentService.getStudentsByGroup(currentGroup));
+            } else {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы не выбрали группу!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        });
+        filePanel.add(fileButton);
 
         createPanelForAddDeleteStudent(studentsModification);
         createPanelForAddDeleteGroup(groupsModification, groupsButtons, studentsList);
@@ -59,6 +95,7 @@ public class MainFrameListener extends JFrame {
 
         contents.add(groupsButtons);
         contents.add(studentsList);
+        contents.add(filePanel);
 
         container.add(contents);
         modification.add(dateOfVisit);
@@ -72,122 +109,215 @@ public class MainFrameListener extends JFrame {
         frame.setVisible(true);
     }
 
-    private static void createPanelForAddDeleteStudent(Container studentModification) {
-        JTextField studentsName = new JTextField(30);
-        JTextField studentGroup = new JTextField(15);
+    private void createPanelForAddDeleteStudent(Container studentModification) {
+        JLabel enterStudentName = new JLabel("Введите ФИО:");
+        JTextField studentsName = new JTextField(25);
+        JLabel enterStudentGroup = new JLabel("Введите номер группы:");
+        JTextField studentGroup = new JTextField(25);
+        studentModification.add(enterStudentName);
         studentModification.add(studentsName);
+        studentModification.add(enterStudentGroup);
         studentModification.add(studentGroup);
         JButton addStudentButton = new JButton("Добавить");
         JButton deleteStudentButton = new JButton("Удалить");
         addStudentButton.addActionListener(e -> {
-            String studentName = studentsName.getText();
-            Student student = new Student();
-            student.setStudentLastname(studentName.substring(0, studentName.indexOf(" ")));
-            studentName = studentName.substring(studentName.indexOf(" ") + 1);
-            student.setStudentName(studentName.substring(0, studentName.indexOf(" ")));
-            studentName = studentName.substring(studentName.indexOf(" ") + 1);
-            student.setStudentPatronymic(studentName);
-            Groups group = new Groups();
-            group.setGroupNumber(studentGroup.getText());
-            StudentServiceImpl.getInstance().addStudent(student, group);
+            if (studentsName.getText().isEmpty() || studentGroup.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы не заполнили все поля!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else if (checkFullStudentName(studentsName.getText()) == null) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы ввели некорректное ФИО студента!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else if (studentService.getGroup(studentGroup.getText()) == null) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Такой группы не существует!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                String studentName = studentsName.getText();
+                Student student = checkFullStudentName(studentName);
+                Group group = new Group();
+                group.setGroupNumber(studentGroup.getText());
+                studentService.addStudent(student, group);
+            }
         });
-        deleteStudentButton.addActionListener(e -> {
-            String studentName = studentsName.getText();
-            Student student = new Student();
-            student.setStudentLastname(studentName.substring(0, studentName.indexOf(" ")));
-            studentName = studentName.substring(studentName.indexOf(" ") + 1);
-            student.setStudentName(studentName.substring(0, studentName.indexOf(" ")));
-            studentName = studentName.substring(studentName.indexOf(" ") + 1);
-            student.setStudentPatronymic(studentName);
-            Groups group = new Groups();
-            group.setGroupNumber(studentGroup.getText());
-            Student studentDelete = StudentServiceImpl.getInstance().getStudentByName(student);
-            StudentServiceImpl.getInstance().deleteStudent(studentDelete);
+        deleteStudentButton.addActionListener(e ->
+        {
+            if (studentsName.getText().isEmpty() || studentGroup.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы не заполнили все поля!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else if (checkFullStudentName(studentsName.getText()) == null) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы ввели некорректное ФИО студента!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else if (studentService.getGroup(studentGroup.getText()) == null) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Такой группы не существует!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                String studentName = studentsName.getText();
+                Student student = checkFullStudentName(studentName);
+                if (student != null) {
+                    student.setGroupId(studentService.getGroup(studentGroup.getText()).getId());
+                    Student studentDelete = studentService.getStudentByName(student);
+                    studentService.deleteStudent(studentDelete);
+                } else {
+                    JOptionPane.showMessageDialog(MainFrameListener.this,
+                            new String[]{"Такого студента не существует!"},
+                            "Warning",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            }
         });
         studentModification.add(addStudentButton);
         studentModification.add(deleteStudentButton);
     }
 
-    private static void createPanelForAddDeleteGroup(Container groupModification, Container groupsButtons, Container studentsList) {
-        JTextField groupField = new JTextField(15);
+    private Student checkFullStudentName(String studentName) {
+        try {
+            Student student = new Student();
+            student.setStudentLastname(studentName.substring(0, studentName.indexOf(" ")));
+            studentName = studentName.substring(studentName.indexOf(" ") + 1);
+            student.setStudentName(studentName.substring(0, studentName.indexOf(" ")));
+            studentName = studentName.substring(studentName.indexOf(" ") + 1);
+            student.setStudentPatronymic(studentName);
+            return student;
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    private void createPanelForAddDeleteGroup(Container groupModification, Container groupsButtons, Container studentsList) {
+        JLabel enterGroupNumber = new JLabel("Введите номер группы:");
+        JTextField groupField = new JTextField(25);
+        groupModification.add(enterGroupNumber);
         groupModification.add(groupField);
         JButton addGroupButton = new JButton("Добавить");
         JButton deleteGroupButton = new JButton("Удалить");
         addGroupButton.addActionListener(e -> {
-            Groups newGroup = new Groups();
-            newGroup.setGroupNumber(groupField.getText());
-            StudentServiceImpl.getInstance().addGroup(newGroup);
-            groupsButtons.removeAll();
-            List<Groups> allGroups = StudentServiceImpl.getInstance().getAllGroups();
-            ButtonGroup buttonGroup = new ButtonGroup();
-            for (Groups group : allGroups) {
-                addGroupButton(group.getGroupNumber(), groupsButtons, studentsList, buttonGroup);
+            if (groupField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы не заполнили поле!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else if (!checkGroup(groupField.getText())) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Такая группа уже существует!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                Group newGroup = new Group();
+                newGroup.setGroupNumber(groupField.getText());
+                studentService.addGroup(newGroup);
+                updateGroupsButtons(groupsButtons, studentsList);
             }
-            groupsButtons.repaint();
-            groupsButtons.revalidate();
         });
         deleteGroupButton.addActionListener(e -> {
-            StudentServiceImpl.getInstance().deleteGroup(groupField.getText());
-            groupsButtons.removeAll();
-            List<Groups> allGroups = StudentServiceImpl.getInstance().getAllGroups();
-            ButtonGroup buttonGroup = new ButtonGroup();
-            for (Groups group : allGroups) {
-                addGroupButton(group.getGroupNumber(), groupsButtons, studentsList, buttonGroup);
+            if (groupField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы не заполнили поле!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else if (studentService.getGroup(groupField.getText()) == null) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Такой группы не существует!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                studentService.deleteGroup(groupField.getText());
+                updateGroupsButtons(groupsButtons, studentsList);
             }
-            groupsButtons.repaint();
-            groupsButtons.revalidate();
         });
         groupModification.add(addGroupButton);
         groupModification.add(deleteGroupButton);
     }
 
-    private static void createPanelForGetStudentsByDate(Container studentsByDate, Container studentsList) {
+    private boolean checkGroup(String newGroup) {
+        for (Group groups : studentService.getAllGroups()) {
+            if (newGroup.equals(groups.getGroupNumber())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void updateGroupsButtons(Container groupsButtons, Container studentsList) {
+        groupsButtons.removeAll();
+        List<Group> allGroups = studentService.getAllGroups();
+        ButtonGroup buttonGroup = new ButtonGroup();
+        for (Group group : allGroups) {
+            addGroupButton(group.getGroupNumber(), groupsButtons, studentsList, buttonGroup);
+        }
+        groupsButtons.repaint();
+        groupsButtons.revalidate();
+    }
+
+    private void createPanelForGetStudentsByDate(Container studentsByDate, Container studentsList) {
         JDatePickerImpl datePicker = createDatePicker();
         JButton getStudentsByDateButton = new JButton("Поиск");
         getStudentsByDateButton.addActionListener(e -> {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Dates date = new Dates();
-            if (datePicker.getModel().getValue() != null)
+            DateLecture date = new DateLecture();
+            if (datePicker.getModel().getValue() != null) {
                 date.setDate(sdf.format(datePicker.getModel().getValue()));
-            List<Student> studentList = StudentServiceImpl.getInstance().getStudentsByDate(date);
-            String[] studentsName = new String[studentList.size()];
-            int i = 0;
-            for (Student student : studentList) {
-                Groups group = StudentServiceImpl.getInstance().getGroupById(student.getGroupId());
-                studentsName[i] = student.getStudentLastname() + " " + student.getStudentName() + " " + student.getStudentPatronymic() + " " + group.getGroupNumber();
-                i++;
+                List<Student> studentList = studentService.getStudentsByDate(date);
+                String[] studentsName = new String[studentList.size()];
+                int i = 0;
+                for (Student student : studentList) {
+                    Group group = studentService.getGroupById(student.getGroupId());
+                    studentsName[i] = student.getStudentLastname() + " " + student.getStudentName() + " " + student.getStudentPatronymic() + " " + group.getGroupNumber();
+                    i++;
+                }
+                JList<String> students = new JList<>(studentsName);
+                JScrollPane scrollPane = new JScrollPane(students);
+                scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                scrollPane.setPreferredSize(new Dimension(600, 600));
+                scrollPane.setMaximumSize(scrollPane.getSize());
+                scrollPane.setMinimumSize(scrollPane.getSize());
+                studentsList.removeAll();
+                studentsList.add(scrollPane);
+                studentsList.repaint();
+                studentsList.revalidate();
+            } else {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы не выбрали дату!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
             }
-            JList<String> students = new JList<String>(studentsName);
-            JScrollPane scrollPane = new JScrollPane(students);
-            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            scrollPane.setPreferredSize(new Dimension(600, 600));
-            scrollPane.setMaximumSize(scrollPane.getSize());
-            scrollPane.setMinimumSize(scrollPane.getSize());
-            studentsList.removeAll();
-            studentsList.add(scrollPane);
-            studentsList.repaint();
-            studentsList.revalidate();
         });
         studentsByDate.add(datePicker);
         studentsByDate.add(getStudentsByDateButton);
     }
 
-    private static void createPanelForAddDate(Container dateOfVisit) {
+    private void createPanelForAddDate(Container dateOfVisit) {
         JDatePickerImpl datePicker = createDatePicker();
         dateOfVisit.add(datePicker);
         JButton addDateButton = new JButton("Добавить");
         addDateButton.addActionListener(e -> {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Dates date = new Dates();
-            if (datePicker.getModel().getValue() != null)
+            DateLecture date = new DateLecture();
+            if (datePicker.getModel().getValue() != null) {
                 date.setDate(sdf.format(datePicker.getModel().getValue()));
-            StudentServiceImpl.getInstance().addDate(date);
+                studentService.addDate(date);
+            } else {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Вы не выбрали дату!"},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            }
         });
         dateOfVisit.add(addDateButton);
     }
 
-    private static JDatePickerImpl createDatePicker() {
+    private JDatePickerImpl createDatePicker() {
         UtilDateModel model = new UtilDateModel();
         Properties p = new Properties();
         p.put("text.today", "Today");
@@ -197,29 +327,30 @@ public class MainFrameListener extends JFrame {
         return new JDatePickerImpl(datePanel, new DateLabelFormatter());
     }
 
-    private static void addGroupButton(String caption, Container containerButton, Container containerStudents, ButtonGroup buttonGroup) {
+    private void addGroupButton(String caption, Container containerButton, Container containerStudents, ButtonGroup buttonGroup) {
         JButton button = new JButton(caption);
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setAlignmentY(Component.TOP_ALIGNMENT);
         button.addActionListener(e -> {
-            Groups group = StudentServiceImpl.getInstance().getGroup(button.getText());
+            Group group = studentService.getGroup(button.getText());
             createStudentsPane(containerStudents, group);
+            currentGroup = group;
         });
 
         buttonGroup.add(button);
         containerButton.add(button);
     }
 
-    public static void createButtonsForGroups(Container containerButton, Container containerStudents) {
+    public void createButtonsForGroups(Container containerButton, Container containerStudents) {
         containerButton.setLayout(new BoxLayout(containerButton, BoxLayout.X_AXIS));
-        List<Groups> allGroups = StudentServiceImpl.getInstance().getAllGroups();
+        List<Group> allGroups = studentService.getAllGroups();
         ButtonGroup buttonGroup = new ButtonGroup();
-        for (Groups group : allGroups) {
+        for (Group group : allGroups) {
             addGroupButton(group.getGroupNumber(), containerButton, containerStudents, buttonGroup);
         }
     }
 
-    public static void createStudentsPane(Container container, Groups group) {
+    public void createStudentsPane(Container container, Group group) {
         JTable studentsTable = new JTable(createTableData(group), createHeaderTable()) {
             @Override
             public Class<?> getColumnClass(int column) {
@@ -235,26 +366,28 @@ public class MainFrameListener extends JFrame {
                 if (col > 0) {
                     String studentName = (String) getValueAt(row, 0);
                     String date = createHeaderTable()[col];
-                    Student student = new Student();
-                    student.setStudentLastname(studentName.substring(0, studentName.indexOf(" ")));
-                    studentName = studentName.substring(studentName.indexOf(" ") + 1);
-                    student.setStudentName(studentName.substring(0, studentName.indexOf(" ")));
-                    studentName = studentName.substring(studentName.indexOf(" ") + 1);
-                    student.setStudentPatronymic(studentName);
+                    Student student = checkFullStudentName(studentName);
                     if ((Boolean) this.getValueAt(row, col)) {
                         Visit visit = new Visit();
-                        StudentServiceImpl.getInstance().addVisit(date, student, visit);
+                        studentService.addVisit(date, student, visit);
                     } else {
-                        Dates deleteDate = new Dates();
-                        for (Student allStudent : StudentServiceImpl.getInstance().getStudentsByGroup(group)) {
-                            if (allStudent.getStudentLastname().equals(student.getStudentLastname())) {
-                                student.setId(allStudent.getId());
+                        DateLecture deleteDate = new DateLecture();
+                        if (student == null) {
+                            JOptionPane.showMessageDialog(MainFrameListener.this,
+                                    new String[]{"Такого студента не существует!"},
+                                    "Warning",
+                                    JOptionPane.WARNING_MESSAGE);
+                        } else {
+                            for (Student allStudent : studentService.getStudentsByGroup(group)) {
+                                if (allStudent.getStudentLastname().equals(student.getStudentLastname())) {
+                                    student.setId(allStudent.getId());
+                                }
                             }
-                        }
-                        for (Dates allDate : StudentServiceImpl.getInstance().getAllDates()) {
-                            if (allDate.getDate().equals(date)) {
-                                deleteDate.setId(allDate.getId());
-                                StudentServiceImpl.getInstance().deleteVisit(deleteDate.getId(), student.getId());
+                            for (DateLecture allDate : studentService.getAllDates()) {
+                                if (allDate.getDate().equals(date)) {
+                                    deleteDate.setId(allDate.getId());
+                                    studentService.deleteVisit(deleteDate.getId(), student.getId());
+                                }
                             }
                         }
                     }
@@ -280,19 +413,19 @@ public class MainFrameListener extends JFrame {
         container.revalidate();
     }
 
-    private static String[] createListOfDates() {
-        List<Dates> dates = StudentServiceImpl.getInstance().getAllDates();
+    private String[] createListOfDates() {
+        List<DateLecture> dates = studentService.getAllDates();
         String[] datesOfVisit = new String[dates.size()];
         int j = 0;
-        for (Dates date : dates) {
+        for (DateLecture date : dates) {
             datesOfVisit[j] = date.getDate();
             j++;
         }
         return datesOfVisit;
     }
 
-    private static String[] createStudentsList(Groups group) {
-        List<Student> studentList = StudentServiceImpl.getInstance().getStudentsByGroup(group);
+    private String[] createStudentsList(Group group) {
+        List<Student> studentList = studentService.getStudentsByGroup(group);
         String[] students = new String[studentList.size()];
         int i = 0;
         for (Student student : studentList) {
@@ -304,7 +437,7 @@ public class MainFrameListener extends JFrame {
         return students;
     }
 
-    private static String[] createHeaderTable() {
+    private String[] createHeaderTable() {
         String[] dates = createListOfDates();
         String[] header = new String[dates.length + 1];
         header[0] = "ФИО";
@@ -312,15 +445,15 @@ public class MainFrameListener extends JFrame {
         return header;
     }
 
-    private static Object[][] createTableData(Groups group) {
+    private Object[][] createTableData(Group group) {
         String[] students = createStudentsList(group);
-        List<Student> studentsDb = StudentServiceImpl.getInstance().getStudentsByGroup(group);
+        List<Student> studentsDb = studentService.getStudentsByGroup(group);
         String[] dates = createListOfDates();
-        List<Dates> datesDb = StudentServiceImpl.getInstance().getAllDates();
+        List<DateLecture> datesDb = studentService.getAllDates();
         Object[][] tableData = new Object[students.length][datesDb.size() + 1];
         int i = 0;
         for (Student student : studentsDb) {
-            List<Dates> visits = StudentServiceImpl.getInstance().getDatesByStudent(student);
+            List<DateLecture> visits = studentService.getDatesByStudent(student);
             tableData[i][0] = students[i];
             int k = 0;
             for (int j = 1; j < dates.length + 1; j++) {
@@ -332,8 +465,8 @@ public class MainFrameListener extends JFrame {
         return tableData;
     }
 
-    private static boolean checkDate(List<Dates> datesDb, String dateString) {
-        for (Dates date : datesDb) {
+    private boolean checkDate(List<DateLecture> datesDb, String dateString) {
+        for (DateLecture date : datesDb) {
             if (date.getDate().equals(dateString)) return true;
         }
         return false;

@@ -1,6 +1,6 @@
 package com.coursework.model;
 
-public class Dates {
+public class DateLecture {
     private int id;
     private String date;
 

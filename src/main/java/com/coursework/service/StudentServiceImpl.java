@@ -2,8 +2,8 @@ package com.coursework.service;
 
 import com.coursework.dao.StudentDao;
 import com.coursework.dao.StudentDaoImpl;
-import com.coursework.model.Dates;
-import com.coursework.model.Groups;
+import com.coursework.model.DateLecture;
+import com.coursework.model.Group;
 import com.coursework.model.Student;
 import com.coursework.model.Visit;
 
@@ -29,27 +29,27 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public Groups getGroup(String group) {
+    public Group getGroup(String group) {
         return studentDao.getGroup(group);
     }
 
     @Override
-    public void addDate(Dates date) {
+    public void addDate(DateLecture date) {
         studentDao.addDate(date);
     }
 
     @Override
-    public void addStudent(Student student, Groups group) {
+    public void addStudent(Student student, Group group) {
         studentDao.addStudent(student, group);
     }
 
     @Override
-    public List<Student> getStudentsByDate(Dates date) {
+    public List<Student> getStudentsByDate(DateLecture date) {
         return studentDao.getStudentsByDate(date);
     }
 
     @Override
-    public void addGroup(Groups group) {
+    public void addGroup(Group group) {
         studentDao.addGroup(group);
     }
 
@@ -64,22 +64,22 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public List<Groups> getAllGroups() {
+    public List<Group> getAllGroups() {
         return studentDao.getAllGroups();
     }
 
     @Override
-    public List<Student> getStudentsByGroup(Groups group) {
+    public List<Student> getStudentsByGroup(Group group) {
         return studentDao.getStudentsByGroup(group);
     }
 
     @Override
-    public List<Dates> getAllDates() {
+    public List<DateLecture> getAllDates() {
         return studentDao.getAllDates();
     }
 
     @Override
-    public List<Dates> getDatesByStudent(Student student) {
+    public List<DateLecture> getDatesByStudent(Student student) {
         return studentDao.getDatesByStudent(student);
     }
 
@@ -89,7 +89,7 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public Groups getGroupById(int groupId) {
+    public Group getGroupById(int groupId) {
         return studentDao.getGroupById(groupId);
     }
 

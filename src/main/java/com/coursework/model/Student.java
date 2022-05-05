@@ -46,4 +46,8 @@ public class Student {
     public void setStudentPatronymic(String getStudent_patronymic) {
         this.studentPatronymic = getStudent_patronymic;
     }
+
+    public String getFullName() {
+        return this.studentLastname + " " + this.studentName + " " + this.studentPatronymic;
+    }
 }

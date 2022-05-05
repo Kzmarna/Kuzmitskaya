@@ -1,8 +1,8 @@
 package com.coursework.dao;
 
 import com.coursework.dao.db.DBManager;
-import com.coursework.model.Dates;
-import com.coursework.model.Groups;
+import com.coursework.model.DateLecture;
+import com.coursework.model.Group;
 import com.coursework.model.Student;
 import com.coursework.model.Visit;
 
@@ -30,7 +30,7 @@ public class StudentDaoImpl implements StudentDao {
     private static final String SELECT_ALL_DATES = "select * from dates";
     private static final String SELECT_DATES_BY_STUDENT = "select dates.id, dates.date_of_visit from dates inner join student_date on dates.id = student_date.date_id where (select id from students where student_name = ? and student_lastname = ? and student_patronymic = ?) = student_date.student_id";
     private static final String DELETE_VISIT = "delete from student_date where date_id = ? and student_id = ?";
-    private static final String SELECT_STUDENT_BY_NAME = "select * from students where student_name = ? and student_lastname = ? and student_patronymic = ?";
+    private static final String SELECT_STUDENT_BY_NAME = "select * from students where student_name = ? and student_lastname = ? and student_patronymic = ? and group_id = ?";
     private static final String DELETE_STUDENT2 = "delete from students where group_id = ? and student_name = ? and student_lastname = ? and student_patronymic = ?";
     private static final String DELETE_STUDENT1 = "delete from student_date where student_id = ?";
 
@@ -49,8 +49,8 @@ public class StudentDaoImpl implements StudentDao {
 
     }
 
-    public Groups initGroup(ResultSet resultSet) throws SQLException {
-        Groups group = new Groups();
+    public Group initGroup(ResultSet resultSet) throws SQLException {
+        Group group = new Group();
         group.setId(resultSet.getInt("id"));
         group.setGroupNumber(resultSet.getString("group_number"));
         return group;
@@ -66,15 +66,23 @@ public class StudentDaoImpl implements StudentDao {
         return student;
     }
 
-    public Dates initDates(ResultSet resultSet) throws SQLException {
-        Dates dates = new Dates();
+    public DateLecture initDates(ResultSet resultSet) throws SQLException {
+        DateLecture dates = new DateLecture();
         dates.setId(resultSet.getInt("id"));
         dates.setDate(resultSet.getString("date_of_visit"));
         return dates;
     }
 
+    public Visit initVisit(ResultSet resultSet) throws SQLException {
+        Visit visit = new Visit();
+        visit.setId(resultSet.getInt("id"));
+        visit.setDateId(resultSet.getInt("date_of_visit"));
+        visit.setStudentId(resultSet.getInt("date_of_visit"));
+        return visit;
+    }
+
     @Override
-    public void addDate(Dates date) {
+    public void addDate(DateLecture date) {
         try (Connection connection = DBManager.getConnection()) {
             Date utilDate = parseDate(date.getDate());
             java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
@@ -95,7 +103,7 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public void addStudent(Student student, Groups group) {
+    public void addStudent(Student student, Group group) {
         try (Connection connection = DBManager.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_STUDENT);
             preparedStatement.setString(1, group.getGroupNumber());
@@ -116,7 +124,7 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public List<Student> getStudentsByDate(Dates date) {
+    public List<Student> getStudentsByDate(DateLecture date) {
         List<Student> students = new ArrayList<>();
         try (Connection connection = DBManager.getConnection()) {
             Date utilDate = parseDate(date.getDate());
@@ -136,7 +144,7 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public void addGroup(Groups group) {
+    public void addGroup(Group group) {
         try (Connection connection = DBManager.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_GROUP);
             preparedStatement.setString(1, group.getGroupNumber());
@@ -171,7 +179,7 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public Groups getGroup(String group) {
+    public Group getGroup(String group) {
         try (Connection connection = DBManager.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_GROUP_BY_NUMBER);
             preparedStatement.setString(1, group);
@@ -186,7 +194,7 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public Groups getGroupById(int groupId) {
+    public Group getGroupById(int groupId) {
         try (Connection connection = DBManager.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_GROUP_BY_ID);
             preparedStatement.setInt(1, groupId);
@@ -233,14 +241,14 @@ public class StudentDaoImpl implements StudentDao {
             date = format.parse(object);
             return date;
         } catch (Exception exception) {
-            System.out.println("Dates entered incorrectly");
+            System.out.println("DateLecture entered incorrectly");
             return null;
         }
     }
 
     @Override
-    public List<Groups> getAllGroups() {
-        List<Groups> groups = new ArrayList<>();
+    public List<Group> getAllGroups() {
+        List<Group> groups = new ArrayList<>();
         try (Connection connection = DBManager.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SELECT_ALL_GROUPS);
@@ -254,7 +262,7 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public List<Student> getStudentsByGroup(Groups group) {
+    public List<Student> getStudentsByGroup(Group group) {
         List<Student> students = new ArrayList<>();
         try (Connection connection = DBManager.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_STUDENTS_BY_GROUP);
@@ -270,8 +278,8 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public List<Dates> getAllDates() {
-        List<Dates> dates = new ArrayList<>();
+    public List<DateLecture> getAllDates() {
+        List<DateLecture> dates = new ArrayList<>();
         try (Connection connection = DBManager.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SELECT_ALL_DATES);
@@ -285,8 +293,8 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public List<Dates> getDatesByStudent(Student student) {
-        List<Dates> dates = new ArrayList<>();
+    public List<DateLecture> getDatesByStudent(Student student) {
+        List<DateLecture> dates = new ArrayList<>();
         try (Connection connection = DBManager.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_DATES_BY_STUDENT);
             preparedStatement.setString(1, student.getStudentName());
@@ -338,6 +346,7 @@ public class StudentDaoImpl implements StudentDao {
             preparedStatement.setString(1, student.getStudentName());
             preparedStatement.setString(2, student.getStudentLastname());
             preparedStatement.setString(3, student.getStudentPatronymic());
+            preparedStatement.setInt(4, student.getGroupId());
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 return initStudent(resultSet);

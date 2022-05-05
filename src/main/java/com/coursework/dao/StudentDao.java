@@ -1,7 +1,7 @@
 package com.coursework.dao;
 
-import com.coursework.model.Dates;
-import com.coursework.model.Groups;
+import com.coursework.model.DateLecture;
+import com.coursework.model.Group;
 import com.coursework.model.Student;
 import com.coursework.model.Visit;
 
@@ -9,20 +9,20 @@ import java.util.Date;
 import java.util.List;
 
 public interface StudentDao {
-    void addDate(Dates date);
-    void addStudent(Student student, Groups group);
-    List<Student> getStudentsByDate(Dates date);
-    void addGroup(Groups group);
+    void addDate(DateLecture date);
+    void addStudent(Student student, Group group);
+    List<Student> getStudentsByDate(DateLecture date);
+    void addGroup(Group group);
     void deleteGroup(String group);
-    Groups getGroup(String group);
+    Group getGroup(String group);
     void addVisit(String date, Student student, Visit visit);
     Date parseDate(String date);
-    List<Groups> getAllGroups();
-    List<Student> getStudentsByGroup(Groups group);
-    List<Dates> getAllDates();
-    List<Dates> getDatesByStudent(Student student);
+    List<Group> getAllGroups();
+    List<Student> getStudentsByGroup(Group group);
+    List<DateLecture> getAllDates();
+    List<DateLecture> getDatesByStudent(Student student);
     void deleteVisit(int dateId, int studentId);
-    Groups getGroupById(int groupId);
+    Group getGroupById(int groupId);
     void deleteStudent(Student student);
     Student getStudentByName(Student student);
 }
