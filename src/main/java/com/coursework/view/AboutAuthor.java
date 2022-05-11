@@ -3,52 +3,71 @@ package com.coursework.view;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * About the Author window
+ * @author Kuzmitskaya Maryia
+ * @version 1.0
+ */
 public class AboutAuthor extends JFrame {
 
+    private final JFrame frame;
+    private Container container;
+    private ReaderImage readerImage;
+    private Icon icon;
+    private JPanel image;
+    private JLabel iconLabel;
+    private JLabel author;
+    private JLabel group;
+    private JLabel info;
+    private JButton back;
+
+    /**
+     * Constructor
+     */
     public AboutAuthor() {
-        JFrame frame = new JFrame("Об авторе");
+        frame = new JFrame("Об авторе");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         frame.setPreferredSize(new Dimension(550, 650));
         frame.setResizable(false);
         frame.setLocation(400, 100);
 
-        Container container = new Container();
+        container = new Container();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-        ReaderImage readerImage = new ReaderImage();
-        Icon icon = readerImage.scaleImage("images/cat1.png", 368, 400);
+        readerImage = new ReaderImage();
+        icon = readerImage.scaleImage("images/cat1.png", 368, 400);
 
-        JPanel image = new JPanel();
+        image = new JPanel();
         image.setMaximumSize(new Dimension(550, 450));
         image.setMinimumSize(new Dimension(550, 450));
 
-        JLabel iconLabel = new JLabel();
+        iconLabel = new JLabel();
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         iconLabel.setIcon(icon);
 
-        JLabel author = new JLabel();
+        author = new JLabel();
         author.setText("Кузьмицкая Мария Васильевна");
         author.setAlignmentX(Component.CENTER_ALIGNMENT);
         author.setFont(new Font("Times New Roman", Font.PLAIN, 25));
 
-        JLabel group = new JLabel();
+        group = new JLabel();
         group.setText("студентка группы 10702419");
         group.setAlignmentX(Component.CENTER_ALIGNMENT);
         group.setFont(new Font("Times New Roman", Font.PLAIN, 25));
 
-        JLabel info = new JLabel();
+        info = new JLabel();
         info.setText("grisdeborah44@gmail.com");
         info.setAlignmentX(Component.CENTER_ALIGNMENT);
         info.setFont(new Font("Times New Roman", Font.PLAIN, 25));
 
-        JButton back = new JButton("Назад");
+        back = new JButton("Назад");
         back.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         back.setAlignmentX(Component.CENTER_ALIGNMENT);
         back.setMinimumSize(new Dimension(100,40));
         back.setMaximumSize(new Dimension(100,40));
         back.addActionListener(e -> {
             frame.dispose();
-            new MainFrameListener();
+            new MainFrame();
         });
 
         image.add(iconLabel);

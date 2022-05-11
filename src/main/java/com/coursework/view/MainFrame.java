@@ -22,83 +22,105 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
-public class MainFrameListener extends JFrame {
+/**
+ * Main window
+ * @author Kuzmitskaya Maryia
+ * @version 1.0
+ */
+public class MainFrame extends JFrame {
 
     private final FileService fileService;
     private final StudentService studentService;
     private Group currentGroup;
+    private Container container;
+    private final JFrame frame;
+    private JPanel contents;
+    private JPanel studentsList;
+    private JPanel groupsButtons;
+    private JPanel modification;
+    private JPanel dateOfVisit;
+    private JPanel studentsByDate;
+    private JPanel groupsModification;
+    private JPanel studentsModification;
+    private JPanel filePanel;
+    private JButton fileButton;
+    private JButton author;
+    private JButton app;
 
-    public MainFrameListener() {
+    /**
+     * Constructor
+     */
+    public MainFrame() {
         fileService = FileServiceImpl.getInstance();
         studentService = StudentServiceImpl.getInstance();
 
-        Container container = new Container();
+        container = new Container();
         container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
 
-        JFrame frame = new JFrame("Lectures");
+        frame = new JFrame("Lectures");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         frame.setPreferredSize(new Dimension(1100, 900));
         frame.setResizable(false);
         frame.setLocation(400, 100);
 
-        JPanel contents = new JPanel();
+        contents = new JPanel();
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
 
-        JPanel studentsList = new JPanel();
+        studentsList = new JPanel();
         studentsList.setSize(new Dimension(700, 700));
 
-        JPanel groupsButtons = new JPanel();
+        groupsButtons = new JPanel();
         groupsButtons.setMinimumSize(new Dimension(700, 100));
         groupsButtons.setMaximumSize(new Dimension(700, 100));
 
-        JPanel modification = new JPanel();
+        modification = new JPanel();
         modification.setLayout(new BoxLayout(modification, BoxLayout.Y_AXIS));
         modification.setMinimumSize(new Dimension(400, 700));
         modification.setMaximumSize(new Dimension(400, 700));
 
-        JPanel dateOfVisit = new JPanel();
+        dateOfVisit = new JPanel();
         dateOfVisit.setLayout(new FlowLayout(FlowLayout.CENTER));
         dateOfVisit.setBorder(BorderFactory.createTitledBorder("Добавить дату посещения"));
         dateOfVisit.setPreferredSize(new Dimension(350, 150));
 
-        JPanel studentsByDate = new JPanel();
+        studentsByDate = new JPanel();
         studentsByDate.setLayout(new FlowLayout(FlowLayout.CENTER));
         studentsByDate.setBorder(BorderFactory.createTitledBorder("Список студентов по дате посещения"));
         studentsByDate.setPreferredSize(new Dimension(350, 150));
 
-        JPanel groupsModification = new JPanel();
+        groupsModification = new JPanel();
         groupsModification.setLayout(new FlowLayout(FlowLayout.CENTER));
         groupsModification.setBorder(BorderFactory.createTitledBorder("Добавление/Удаление группы"));
         groupsModification.setPreferredSize(new Dimension(350, 150));
 
-        JPanel studentsModification = new JPanel();
+        studentsModification = new JPanel();
         studentsModification.setLayout(new FlowLayout(FlowLayout.CENTER));
         studentsModification.setBorder(BorderFactory.createTitledBorder("Добавление/Удаление студента"));
         studentsModification.setPreferredSize(new Dimension(350, 150));
 
-        JPanel filePanel = new JPanel();
-        JButton fileButton = new JButton("Сохранить в файл");
+        filePanel = new JPanel();
+        fileButton = new JButton("Сохранить в файл");
         fileButton.addActionListener(e -> {
             if (currentGroup != null) {
                 File file = fileService.createFile(studentsList);
                 try {
-                    fileService.writeDataToWord(file, studentService.getStudentsByGroup(currentGroup), currentGroup.getGroupNumber());
+                    fileService.writeDataToExcel(file, studentService.getStudentsByGroup(currentGroup), currentGroup.getGroupNumber());
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             } else {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не выбрали группу!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             }
         });
-        JButton author = new JButton("Об авторе");
+        author = new JButton("Об авторе");
         author.addActionListener(e -> {
             frame.dispose();
             new AboutAuthor();
         });
-        JButton app = new JButton("О программе");
+        app = new JButton("О программе");
         app.addActionListener(e -> {
             frame.dispose();
             new AboutApp();
@@ -140,17 +162,17 @@ public class MainFrameListener extends JFrame {
         JButton deleteStudentButton = new JButton("Удалить");
         addStudentButton.addActionListener(e -> {
             if (studentsName.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не заполнили поле!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (checkFullStudentName(studentsName.getText()) == null) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы ввели некорректное ФИО студента!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (currentGroup == null) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не выбрали группу!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
@@ -163,17 +185,17 @@ public class MainFrameListener extends JFrame {
         deleteStudentButton.addActionListener(e ->
         {
             if (studentsName.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не заполнили поле!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (checkFullStudentName(studentsName.getText()) == null) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы ввели некорректное ФИО студента!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (currentGroup == null) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не выбрали группу!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
@@ -181,7 +203,7 @@ public class MainFrameListener extends JFrame {
                 String studentName = studentsName.getText();
                 Student student = checkFullStudentName(studentName);
                 if (student == null) {
-                    JOptionPane.showMessageDialog(MainFrameListener.this,
+                    JOptionPane.showMessageDialog(MainFrame.this,
                             new String[]{"Вы ввели некорректное имя!"},
                             "Warning",
                             JOptionPane.WARNING_MESSAGE);
@@ -192,7 +214,7 @@ public class MainFrameListener extends JFrame {
                     Student studentDelete = studentService.getStudentByName(student);
                     studentService.deleteStudent(studentDelete);
                 } else {
-                    JOptionPane.showMessageDialog(MainFrameListener.this,
+                    JOptionPane.showMessageDialog(MainFrame.this,
                             new String[]{"Такого студента не существует!"},
                             "Warning",
                             JOptionPane.WARNING_MESSAGE);
@@ -227,12 +249,12 @@ public class MainFrameListener extends JFrame {
         JButton deleteGroupButton = new JButton("Удалить");
         addGroupButton.addActionListener(e -> {
             if (groupField.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не заполнили поле!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (!checkGroup(groupField.getText())) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Такая группа уже существует!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
@@ -245,12 +267,12 @@ public class MainFrameListener extends JFrame {
         });
         deleteGroupButton.addActionListener(e -> {
             if (groupField.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не заполнили поле!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (studentService.getGroup(groupField.getText()) == null) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Такой группы не существует!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
@@ -310,7 +332,7 @@ public class MainFrameListener extends JFrame {
                 studentsList.repaint();
                 studentsList.revalidate();
             } else {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не выбрали дату!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
@@ -331,7 +353,7 @@ public class MainFrameListener extends JFrame {
                 date.setDate(sdf.format(datePicker.getModel().getValue()));
                 studentService.addDate(date);
             } else {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Вы не выбрали дату!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
@@ -360,7 +382,7 @@ public class MainFrameListener extends JFrame {
             try {
                 createStudentsPane(containerStudents, group);
             } catch (ParseException ex) {
-                JOptionPane.showMessageDialog(MainFrameListener.this,
+                JOptionPane.showMessageDialog(MainFrame.this,
                         new String[]{"Что-то пошло не так..."},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
@@ -400,7 +422,7 @@ public class MainFrameListener extends JFrame {
                         Date dateOldFormat = new SimpleDateFormat("dd/MM/yyyy").parse(createHeaderTable()[col]);
                         date = new SimpleDateFormat("yyyy-MM-dd").format(dateOldFormat);
                     } catch (ParseException e) {
-                        JOptionPane.showMessageDialog(MainFrameListener.this,
+                        JOptionPane.showMessageDialog(MainFrame.this,
                                 new String[]{"Что-то пошло не так..."},
                                 "Warning",
                                 JOptionPane.ERROR_MESSAGE);
@@ -412,7 +434,7 @@ public class MainFrameListener extends JFrame {
                     } else {
                         DateLecture deleteDate = new DateLecture();
                         if (student == null) {
-                            JOptionPane.showMessageDialog(MainFrameListener.this,
+                            JOptionPane.showMessageDialog(MainFrame.this,
                                     new String[]{"Такого студента не существует!"},
                                     "Warning",
                                     JOptionPane.WARNING_MESSAGE);

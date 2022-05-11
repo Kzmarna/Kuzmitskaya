@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface FileService {
     File createFile(Container container);
-    void writeDataToWord(File file, List<Student> students, String group) throws IOException;
+    void writeDataToExcel(File file, List<Student> students, String group) throws IOException;
 }

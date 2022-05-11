@@ -17,6 +17,11 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * File Service
+ * @author Kuzmitskaya Maryia
+ * @version 1.0
+ */
 public class FileServiceImpl implements FileService {
 
     private final StudentService studentService;
@@ -26,6 +31,9 @@ public class FileServiceImpl implements FileService {
         studentService = StudentServiceImpl.getInstance();
     }
 
+    /**
+     * @return instance of the class
+     */
     public static FileServiceImpl getInstance() {
         if (fileService == null) {
             synchronized (FileServiceImpl.class) {
@@ -38,6 +46,11 @@ public class FileServiceImpl implements FileService {
         return fileService;
     }
 
+    /**
+     * Method for creating a file
+     * @param container container
+     * @return file
+     */
     @Override
     public File createFile(Container container) {
         JFileChooser jFileChooser = new JFileChooser();
@@ -46,8 +59,15 @@ public class FileServiceImpl implements FileService {
         return new File(jFileChooser.getSelectedFile().getPath() + ".xlsx");
     }
 
+    /**
+     * Method for filling in the file
+     * @param file file
+     * @param students list of students
+     * @param group group
+     * @throws IOException
+     */
     @Override
-    public void writeDataToWord(File file, List<Student> students, String group) throws IOException {
+    public void writeDataToExcel(File file, List<Student> students, String group) throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet spreadsheet = workbook.createSheet("Student Data");
         XSSFRow row;

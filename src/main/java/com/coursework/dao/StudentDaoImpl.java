@@ -12,6 +12,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * The layer between the database and the application
+ * @author Kuzmitskaya Maryia
+ * @version 1.0
+ */
 public class StudentDaoImpl implements StudentDao {
 
     private static volatile StudentDaoImpl instance;
@@ -37,6 +42,9 @@ public class StudentDaoImpl implements StudentDao {
     private StudentDaoImpl() {
     }
 
+    /**
+     * @return instance of the class
+     */
     public static StudentDaoImpl getInstance() {
         if (instance == null) {
             synchronized (StudentDaoImpl.class) {
@@ -49,6 +57,12 @@ public class StudentDaoImpl implements StudentDao {
 
     }
 
+    /**
+     * Method for initializing group using a database
+     * @param resultSet resultSet
+     * @return group
+     * @throws SQLException
+     */
     public Group initGroup(ResultSet resultSet) throws SQLException {
         Group group = new Group();
         group.setId(resultSet.getInt("id"));
@@ -56,6 +70,12 @@ public class StudentDaoImpl implements StudentDao {
         return group;
     }
 
+    /**
+     * Method for initializing student using a database
+     * @param resultSet resultSet
+     * @return student
+     * @throws SQLException
+     */
     public Student initStudent(ResultSet resultSet) throws SQLException {
         Student student = new Student();
         student.setId(resultSet.getInt("id"));
@@ -66,6 +86,12 @@ public class StudentDaoImpl implements StudentDao {
         return student;
     }
 
+    /**
+     * Method for initializing date using a database
+     * @param resultSet resultSet
+     * @return date of lecture
+     * @throws SQLException
+     */
     public DateLecture initDates(ResultSet resultSet) throws SQLException {
         DateLecture dates = new DateLecture();
         dates.setId(resultSet.getInt("id"));
@@ -73,6 +99,12 @@ public class StudentDaoImpl implements StudentDao {
         return dates;
     }
 
+    /**
+     * Method for initializing visit using a database
+     * @param resultSet resultSet
+     * @return visit
+     * @throws SQLException
+     */
     public Visit initVisit(ResultSet resultSet) throws SQLException {
         Visit visit = new Visit();
         visit.setId(resultSet.getInt("id"));
@@ -81,6 +113,10 @@ public class StudentDaoImpl implements StudentDao {
         return visit;
     }
 
+    /**
+     * Adding a date to the database
+     * @param date date
+     */
     @Override
     public void addDate(DateLecture date) {
         try (Connection connection = DBManager.getConnection()) {
@@ -102,6 +138,11 @@ public class StudentDaoImpl implements StudentDao {
         }
     }
 
+    /**
+     * Adding a student to the database
+     * @param student student
+     * @param group group
+     */
     @Override
     public void addStudent(Student student, Group group) {
         try (Connection connection = DBManager.getConnection()) {
@@ -123,6 +164,12 @@ public class StudentDaoImpl implements StudentDao {
         }
     }
 
+    /**
+     * Method for searching students by date
+     * @param date date
+     * @param group group
+     * @return list of students
+     */
     @Override
     public List<Student> getStudentsByDate(DateLecture date, Group group) {
         List<Student> students = new ArrayList<>();
@@ -143,6 +190,10 @@ public class StudentDaoImpl implements StudentDao {
         return students;
     }
 
+    /**
+     * Adding a group to the database
+     * @param group group
+     */
     @Override
     public void addGroup(Group group) {
         try (Connection connection = DBManager.getConnection()) {
@@ -161,12 +212,13 @@ public class StudentDaoImpl implements StudentDao {
         }
     }
 
+    /**
+     * Delete a group to the database
+     * @param group group
+     */
     @Override
     public void deleteGroup(String group) {
         try (Connection connection = DBManager.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(DELETE_GROUP3);
-            preparedStatement.setString(1, group);
-            preparedStatement.executeUpdate();
             PreparedStatement preparedStatement1 = connection.prepareStatement(DELETE_GROUP1);
             preparedStatement1.setString(1, group);
             preparedStatement1.executeUpdate();
@@ -179,6 +231,11 @@ public class StudentDaoImpl implements StudentDao {
         }
     }
 
+    /**
+     * Method for searching group by number
+     * @param group group
+     * @return group
+     */
     @Override
     public Group getGroup(String group) {
         try (Connection connection = DBManager.getConnection()) {
@@ -194,6 +251,11 @@ public class StudentDaoImpl implements StudentDao {
         return null;
     }
 
+    /**
+     * Method for searching group by id
+     * @param groupId group id
+     * @return group
+     */
     @Override
     public Group getGroupById(int groupId) {
         try (Connection connection = DBManager.getConnection()) {
@@ -209,6 +271,12 @@ public class StudentDaoImpl implements StudentDao {
         return null;
     }
 
+    /**
+     * Adding a visit to the database
+     * @param date date
+     * @param student student
+     * @param visit visit
+     */
     @Override
     public void addVisit(String date, Student student, Visit visit) {
         try (Connection connection = DBManager.getConnection()) {
@@ -229,10 +297,14 @@ public class StudentDaoImpl implements StudentDao {
 
         } catch (SQLException e) {
             System.out.println("Incorrectly entered data");
-            ;
         }
     }
 
+    /**
+     * Method for parsing the date
+     * @param object date
+     * @return date
+     */
     @Override
     public Date parseDate(String object) {
         try {
@@ -247,6 +319,10 @@ public class StudentDaoImpl implements StudentDao {
         }
     }
 
+    /**
+     * Method for searching all groups
+     * @return list of groups
+     */
     @Override
     public List<Group> getAllGroups() {
         List<Group> groups = new ArrayList<>();
@@ -262,6 +338,11 @@ public class StudentDaoImpl implements StudentDao {
         return groups;
     }
 
+    /**
+     * Method for searching students by group
+     * @param group group
+     * @return list of students
+     */
     @Override
     public List<Student> getStudentsByGroup(Group group) {
         List<Student> students = new ArrayList<>();
@@ -278,6 +359,10 @@ public class StudentDaoImpl implements StudentDao {
         return students;
     }
 
+    /**
+     * Method for searching all dates
+     * @return list of dates
+     */
     @Override
     public List<DateLecture> getAllDates() {
         List<DateLecture> dates = new ArrayList<>();
@@ -293,6 +378,11 @@ public class StudentDaoImpl implements StudentDao {
         return dates;
     }
 
+    /**
+     * A method for finding the dates of student visits
+     * @param student student
+     * @return list of dates
+     */
     @Override
     public List<DateLecture> getDatesByStudent(Student student) {
         List<DateLecture> dates = new ArrayList<>();
@@ -311,6 +401,11 @@ public class StudentDaoImpl implements StudentDao {
         return dates;
     }
 
+    /**
+     * Method for deleting a visit
+     * @param dateId date id
+     * @param studentId student id
+     */
     @Override
     public void deleteVisit(int dateId, int studentId) {
         try (Connection connection = DBManager.getConnection()) {
@@ -323,6 +418,10 @@ public class StudentDaoImpl implements StudentDao {
         }
     }
 
+    /**
+     * Method for deleting a student
+     * @param student student
+     */
     @Override
     public void deleteStudent(Student student) {
         try (Connection connection = DBManager.getConnection()) {
@@ -340,6 +439,11 @@ public class StudentDaoImpl implements StudentDao {
         }
     }
 
+    /**
+     * Method for searching for a student by name
+     * @param student student
+     * @return student
+     */
     @Override
     public Student getStudentByName(Student student) {
         try (Connection connection = DBManager.getConnection()) {
