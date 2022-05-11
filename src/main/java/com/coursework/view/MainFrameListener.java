@@ -16,9 +16,11 @@ import javax.swing.*;
 import java.awt.*;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 public class MainFrameListener extends JFrame {
 
@@ -35,7 +37,7 @@ public class MainFrameListener extends JFrame {
 
         JFrame frame = new JFrame("Lectures");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        frame.setPreferredSize(new Dimension(1300, 1000));
+        frame.setPreferredSize(new Dimension(1100, 900));
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
@@ -77,7 +79,11 @@ public class MainFrameListener extends JFrame {
         fileButton.addActionListener(e -> {
             if (currentGroup != null) {
                 File file = fileService.createFile(studentsList);
-                fileService.writeDataToWord(file, studentService.getStudentsByGroup(currentGroup));
+                try {
+                    fileService.writeDataToWord(file, studentService.getStudentsByGroup(currentGroup), currentGroup.getGroupNumber());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             } else {
                 JOptionPane.showMessageDialog(MainFrameListener.this,
                         new String[]{"Вы не выбрали группу!"},
@@ -112,18 +118,18 @@ public class MainFrameListener extends JFrame {
     private void createPanelForAddDeleteStudent(Container studentModification) {
         JLabel enterStudentName = new JLabel("Введите ФИО:");
         JTextField studentsName = new JTextField(25);
-        JLabel enterStudentGroup = new JLabel("Введите номер группы:");
-        JTextField studentGroup = new JTextField(25);
+//        JLabel enterStudentGroup = new JLabel("Введите номер группы:");
+//        JTextField studentGroup = new JTextField(25);
         studentModification.add(enterStudentName);
         studentModification.add(studentsName);
-        studentModification.add(enterStudentGroup);
-        studentModification.add(studentGroup);
+//        studentModification.add(enterStudentGroup);
+//        studentModification.add(studentGroup);
         JButton addStudentButton = new JButton("Добавить");
         JButton deleteStudentButton = new JButton("Удалить");
         addStudentButton.addActionListener(e -> {
-            if (studentsName.getText().isEmpty() || studentGroup.getText().isEmpty()) {
+            if (studentsName.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(MainFrameListener.this,
-                        new String[]{"Вы не заполнили все поля!"},
+                        new String[]{"Вы не заполнили поле!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (checkFullStudentName(studentsName.getText()) == null) {
@@ -131,24 +137,24 @@ public class MainFrameListener extends JFrame {
                         new String[]{"Вы ввели некорректное ФИО студента!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
-            } else if (studentService.getGroup(studentGroup.getText()) == null) {
+            } else if (currentGroup == null) {
                 JOptionPane.showMessageDialog(MainFrameListener.this,
-                        new String[]{"Такой группы не существует!"},
+                        new String[]{"Вы не выбрали группу!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else {
                 String studentName = studentsName.getText();
                 Student student = checkFullStudentName(studentName);
-                Group group = new Group();
-                group.setGroupNumber(studentGroup.getText());
-                studentService.addStudent(student, group);
+//                Group group = new Group();
+//                group.setGroupNumber(studentGroup.getText());
+                studentService.addStudent(student, currentGroup);
             }
         });
         deleteStudentButton.addActionListener(e ->
         {
-            if (studentsName.getText().isEmpty() || studentGroup.getText().isEmpty()) {
+            if (studentsName.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(MainFrameListener.this,
-                        new String[]{"Вы не заполнили все поля!"},
+                        new String[]{"Вы не заполнили поле!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else if (checkFullStudentName(studentsName.getText()) == null) {
@@ -156,16 +162,23 @@ public class MainFrameListener extends JFrame {
                         new String[]{"Вы ввели некорректное ФИО студента!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
-            } else if (studentService.getGroup(studentGroup.getText()) == null) {
+            } else if (currentGroup == null) {
                 JOptionPane.showMessageDialog(MainFrameListener.this,
-                        new String[]{"Такой группы не существует!"},
+                        new String[]{"Вы не выбрали группу!"},
                         "Warning",
                         JOptionPane.WARNING_MESSAGE);
             } else {
                 String studentName = studentsName.getText();
                 Student student = checkFullStudentName(studentName);
-                if (student != null) {
-                    student.setGroupId(studentService.getGroup(studentGroup.getText()).getId());
+                if (student == null) {
+                    JOptionPane.showMessageDialog(MainFrameListener.this,
+                            new String[]{"Вы ввели некорректное имя!"},
+                            "Warning",
+                            JOptionPane.WARNING_MESSAGE);
+                } else {
+                    student.setGroupId(studentService.getGroup(currentGroup.getGroupNumber()).getId());
+                }
+                if (studentService.getStudentByName(student) != null) {
                     Student studentDelete = studentService.getStudentByName(student);
                     studentService.deleteStudent(studentDelete);
                 } else {
@@ -174,6 +187,7 @@ public class MainFrameListener extends JFrame {
                             "Warning",
                             JOptionPane.WARNING_MESSAGE);
                 }
+
             }
         });
         studentModification.add(addStudentButton);
@@ -267,12 +281,12 @@ public class MainFrameListener extends JFrame {
             DateLecture date = new DateLecture();
             if (datePicker.getModel().getValue() != null) {
                 date.setDate(sdf.format(datePicker.getModel().getValue()));
-                List<Student> studentList = studentService.getStudentsByDate(date);
+                List<Student> studentList = studentService.getStudentsByDate(date, currentGroup);
                 String[] studentsName = new String[studentList.size()];
                 int i = 0;
                 for (Student student : studentList) {
                     Group group = studentService.getGroupById(student.getGroupId());
-                    studentsName[i] = student.getStudentLastname() + " " + student.getStudentName() + " " + student.getStudentPatronymic() + " " + group.getGroupNumber();
+                    studentsName[i] = student.getStudentLastname() + " " + student.getStudentName() + " " + student.getStudentPatronymic();
                     i++;
                 }
                 JList<String> students = new JList<>(studentsName);
@@ -333,7 +347,14 @@ public class MainFrameListener extends JFrame {
         button.setAlignmentY(Component.TOP_ALIGNMENT);
         button.addActionListener(e -> {
             Group group = studentService.getGroup(button.getText());
-            createStudentsPane(containerStudents, group);
+            try {
+                createStudentsPane(containerStudents, group);
+            } catch (ParseException ex) {
+                JOptionPane.showMessageDialog(MainFrameListener.this,
+                        new String[]{"Что-то пошло не так..."},
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            }
             currentGroup = group;
         });
 
@@ -350,11 +371,11 @@ public class MainFrameListener extends JFrame {
         }
     }
 
-    public void createStudentsPane(Container container, Group group) {
+    public void createStudentsPane(Container container, Group group) throws ParseException {
         JTable studentsTable = new JTable(createTableData(group), createHeaderTable()) {
             @Override
             public Class<?> getColumnClass(int column) {
-                if (column == 0) {
+                if (column == 0 || column == 1) {
                     return String.class;
                 }
                 return Boolean.class;
@@ -363,9 +384,18 @@ public class MainFrameListener extends JFrame {
             @Override
             public void setValueAt(Object value, int row, int col) {
                 super.setValueAt(value, row, col);
-                if (col > 0) {
+                if (col > 1) {
                     String studentName = (String) getValueAt(row, 0);
-                    String date = createHeaderTable()[col];
+                    String date = null;
+                    try {
+                        Date dateOldFormat = new SimpleDateFormat("dd/MM/yyyy").parse(createHeaderTable()[col]);
+                        date = new SimpleDateFormat("yyyy-MM-dd").format(dateOldFormat);
+                    } catch (ParseException e) {
+                        JOptionPane.showMessageDialog(MainFrameListener.this,
+                                new String[]{"Что-то пошло не так..."},
+                                "Warning",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
                     Student student = checkFullStudentName(studentName);
                     if ((Boolean) this.getValueAt(row, col)) {
                         Visit visit = new Visit();
@@ -391,12 +421,21 @@ public class MainFrameListener extends JFrame {
                             }
                         }
                     }
+                    container.removeAll();
+                    try {
+                        createStudentsPane(container, group);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    container.repaint();
+                    container.revalidate();
                 }
             }
         };
         studentsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         studentsTable.getColumnModel().getColumn(0).setPreferredWidth(200);
-        for (int i = 1; i < studentsTable.getColumnCount(); i++) {
+        studentsTable.getColumnModel().getColumn(1).setPreferredWidth(110);
+        for (int i = 2; i < studentsTable.getColumnCount(); i++) {
             studentsTable.getColumnModel().getColumn(i).setPreferredWidth(80);
         }
         studentsTable.setPreferredScrollableViewportSize(new Dimension(600, 700));
@@ -424,6 +463,19 @@ public class MainFrameListener extends JFrame {
         return datesOfVisit;
     }
 
+    private String[] createListOfDatesForHeader() throws ParseException {
+        List<DateLecture> dates = studentService.getAllDates();
+        String[] datesOfVisit = new String[dates.size()];
+        int j = 0;
+        for (DateLecture date : dates) {
+            Date dateOldFormat = new SimpleDateFormat("yyyy-MM-dd").parse(date.getDate());
+            date.setDate(new SimpleDateFormat("dd/MM/yyyy").format(dateOldFormat));
+            datesOfVisit[j] = date.getDate();
+            j++;
+        }
+        return datesOfVisit;
+    }
+
     private String[] createStudentsList(Group group) {
         List<Student> studentList = studentService.getStudentsByGroup(group);
         String[] students = new String[studentList.size()];
@@ -437,11 +489,12 @@ public class MainFrameListener extends JFrame {
         return students;
     }
 
-    private String[] createHeaderTable() {
-        String[] dates = createListOfDates();
-        String[] header = new String[dates.length + 1];
+    private String[] createHeaderTable() throws ParseException {
+        String[] dates = createListOfDatesForHeader();
+        String[] header = new String[dates.length + 2];
         header[0] = "ФИО";
-        System.arraycopy(dates, 0, header, 1, header.length - 1);
+        header[1] = "Кол-во пропусков";
+        System.arraycopy(dates, 0, header, 2, dates.length);
         return header;
     }
 
@@ -450,13 +503,14 @@ public class MainFrameListener extends JFrame {
         List<Student> studentsDb = studentService.getStudentsByGroup(group);
         String[] dates = createListOfDates();
         List<DateLecture> datesDb = studentService.getAllDates();
-        Object[][] tableData = new Object[students.length][datesDb.size() + 1];
+        Object[][] tableData = new Object[students.length][datesDb.size() + 2];
         int i = 0;
         for (Student student : studentsDb) {
             List<DateLecture> visits = studentService.getDatesByStudent(student);
             tableData[i][0] = students[i];
+            tableData[i][1] = datesDb.size() - studentService.getDatesByStudent(student).size();
             int k = 0;
-            for (int j = 1; j < dates.length + 1; j++) {
+            for (int j = 2; j < dates.length + 2; j++) {
                 tableData[i][j] = checkDate(visits, dates[k]);
                 k++;
             }

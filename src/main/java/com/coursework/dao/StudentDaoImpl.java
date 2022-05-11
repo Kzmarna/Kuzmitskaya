@@ -17,9 +17,9 @@ public class StudentDaoImpl implements StudentDao {
     private static volatile StudentDaoImpl instance;
     private static final String INSERT_DATE = "insert into dates (date_of_visit) values (?)";
     private static final String INSERT_STUDENT = "insert into students (group_id, student_name, student_lastname,student_patronymic) values ((select id from groups_students where group_number = ?),?,?,?)";
-    private static final String SELECT_STUDENTS_BY_DATE = "select * from students inner join student_date on students.id = student_date.student_id inner join dates on student_date.date_id = dates.id where (select id from dates where date_of_visit = ?) = student_date.date_id";
+    private static final String SELECT_STUDENTS_BY_DATE = "select * from students inner join student_date on students.id = student_date.student_id inner join dates on student_date.date_id = dates.id where (select id from dates where date_of_visit = ?) = student_date.date_id and group_id = (select id from groups_students where group_number = ?)";
     private static final String INSERT_GROUP = "insert into groups_students (group_number) values (?)";
-    private static final String DELETE_GROUP1 = "delete from students where (select id from groups_students where group_number = ?) = group_id";
+    private static final String DELETE_GROUP1 = "delete from students where group_id = (select id from groups_students where group_number = ?)";
     private static final String DELETE_GROUP2 = "delete from groups_students where group_number = ?";
     private static final String DELETE_GROUP3 = "delete from student_date where student_id = (select id from students where group_id = (select id from groups_students where group_number = ?))";
     private static final String INSERT_VISIT = "insert into student_date(date_id, student_id) values ((select id from dates where date_of_visit = ?),(select id from students where student_name = ? and student_lastname = ? and student_patronymic = ?))";
@@ -124,7 +124,7 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public List<Student> getStudentsByDate(DateLecture date) {
+    public List<Student> getStudentsByDate(DateLecture date, Group group) {
         List<Student> students = new ArrayList<>();
         try (Connection connection = DBManager.getConnection()) {
             Date utilDate = parseDate(date.getDate());
@@ -132,13 +132,13 @@ public class StudentDaoImpl implements StudentDao {
 
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_STUDENTS_BY_DATE);
             preparedStatement.setDate(1, sqlDate);
+            preparedStatement.setString(2, group.getGroupNumber());
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 students.add(initStudent(resultSet));
             }
         } catch (SQLException e) {
             System.out.println("error");
-            ;
         }
         return students;
     }
@@ -174,6 +174,7 @@ public class StudentDaoImpl implements StudentDao {
             preparedStatement2.setString(1, group);
             preparedStatement2.executeUpdate();
         } catch (SQLException e) {
+            e.printStackTrace();
             System.out.println("Incorrectly entered data");
         }
     }

@@ -44,8 +44,8 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public List<Student> getStudentsByDate(DateLecture date) {
-        return studentDao.getStudentsByDate(date);
+    public List<Student> getStudentsByDate(DateLecture date, Group group) {
+        return studentDao.getStudentsByDate(date, group);
     }
 
     @Override

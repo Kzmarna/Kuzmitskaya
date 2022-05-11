@@ -11,7 +11,7 @@ import java.util.List;
 public interface StudentDao {
     void addDate(DateLecture date);
     void addStudent(Student student, Group group);
-    List<Student> getStudentsByDate(DateLecture date);
+    List<Student> getStudentsByDate(DateLecture date, Group group);
     void addGroup(Group group);
     void deleteGroup(String group);
     Group getGroup(String group);

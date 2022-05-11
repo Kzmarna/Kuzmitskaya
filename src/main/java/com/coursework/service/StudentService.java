@@ -11,7 +11,7 @@ public interface StudentService {
     Group getGroup(String group);
     void addDate(DateLecture date);
     void addStudent(Student student, Group group);
-    List<Student> getStudentsByDate(DateLecture date);
+    List<Student> getStudentsByDate(DateLecture date, Group group);
     void addGroup(Group group);
     void deleteGroup(String group);
     void addVisit(String date, Student student, Visit visit);
