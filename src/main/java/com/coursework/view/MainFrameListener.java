@@ -38,6 +38,8 @@ public class MainFrameListener extends JFrame {
         JFrame frame = new JFrame("Lectures");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         frame.setPreferredSize(new Dimension(1100, 900));
+        frame.setResizable(false);
+        frame.setLocation(400, 100);
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
@@ -91,7 +93,20 @@ public class MainFrameListener extends JFrame {
                         JOptionPane.WARNING_MESSAGE);
             }
         });
+        JButton author = new JButton("Об авторе");
+        author.addActionListener(e -> {
+            frame.dispose();
+            new AboutAuthor();
+        });
+        JButton app = new JButton("О программе");
+        app.addActionListener(e -> {
+            frame.dispose();
+            new AboutApp();
+        });
+
         filePanel.add(fileButton);
+        filePanel.add(author);
+        filePanel.add(app);
 
         createPanelForAddDeleteStudent(studentsModification);
         createPanelForAddDeleteGroup(groupsModification, groupsButtons, studentsList);
@@ -100,6 +115,7 @@ public class MainFrameListener extends JFrame {
         createPanelForGetStudentsByDate(studentsByDate, studentsList);
 
         contents.add(groupsButtons);
+
         contents.add(studentsList);
         contents.add(filePanel);
 
@@ -118,12 +134,8 @@ public class MainFrameListener extends JFrame {
     private void createPanelForAddDeleteStudent(Container studentModification) {
         JLabel enterStudentName = new JLabel("Введите ФИО:");
         JTextField studentsName = new JTextField(25);
-//        JLabel enterStudentGroup = new JLabel("Введите номер группы:");
-//        JTextField studentGroup = new JTextField(25);
         studentModification.add(enterStudentName);
         studentModification.add(studentsName);
-//        studentModification.add(enterStudentGroup);
-//        studentModification.add(studentGroup);
         JButton addStudentButton = new JButton("Добавить");
         JButton deleteStudentButton = new JButton("Удалить");
         addStudentButton.addActionListener(e -> {
@@ -145,8 +157,6 @@ public class MainFrameListener extends JFrame {
             } else {
                 String studentName = studentsName.getText();
                 Student student = checkFullStudentName(studentName);
-//                Group group = new Group();
-//                group.setGroupNumber(studentGroup.getText());
                 studentService.addStudent(student, currentGroup);
             }
         });
@@ -285,7 +295,6 @@ public class MainFrameListener extends JFrame {
                 String[] studentsName = new String[studentList.size()];
                 int i = 0;
                 for (Student student : studentList) {
-                    Group group = studentService.getGroupById(student.getGroupId());
                     studentsName[i] = student.getStudentLastname() + " " + student.getStudentName() + " " + student.getStudentPatronymic();
                     i++;
                 }
@@ -346,7 +355,8 @@ public class MainFrameListener extends JFrame {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setAlignmentY(Component.TOP_ALIGNMENT);
         button.addActionListener(e -> {
-            Group group = studentService.getGroup(button.getText());
+            String groupNumber = button.getText();
+            Group group = studentService.getGroup(groupNumber);
             try {
                 createStudentsPane(containerStudents, group);
             } catch (ParseException ex) {
@@ -357,12 +367,11 @@ public class MainFrameListener extends JFrame {
             }
             currentGroup = group;
         });
-
         buttonGroup.add(button);
         containerButton.add(button);
     }
 
-    public void createButtonsForGroups(Container containerButton, Container containerStudents) {
+    private void createButtonsForGroups(Container containerButton, Container containerStudents) {
         containerButton.setLayout(new BoxLayout(containerButton, BoxLayout.X_AXIS));
         List<Group> allGroups = studentService.getAllGroups();
         ButtonGroup buttonGroup = new ButtonGroup();
@@ -371,7 +380,7 @@ public class MainFrameListener extends JFrame {
         }
     }
 
-    public void createStudentsPane(Container container, Group group) throws ParseException {
+    private void createStudentsPane(Container container, Group group) throws ParseException {
         JTable studentsTable = new JTable(createTableData(group), createHeaderTable()) {
             @Override
             public Class<?> getColumnClass(int column) {
