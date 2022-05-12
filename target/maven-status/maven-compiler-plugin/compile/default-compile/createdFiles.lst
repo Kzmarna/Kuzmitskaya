@@ -3,9 +3,10 @@ com\coursework\service\StudentServiceImpl.class
 com\coursework\Main.class
 com\coursework\model\Visit.class
 com\coursework\view\ReaderImage.class
+com\coursework\view\MainFrame$1.class
 com\coursework\view\SplashScreen.class
+com\coursework\view\MainFrame.class
 com\coursework\dao\StudentDao.class
-com\coursework\view\MainFrameListener$1.class
 com\coursework\dao\StudentDaoImpl.class
 com\coursework\model\Group.class
 com\coursework\service\StudentService.class
@@ -13,7 +14,6 @@ com\coursework\dao\db\DBManager.class
 com\coursework\view\AboutApp.class
 com\coursework\view\DateLabelFormatter.class
 com\coursework\view\AboutAuthor.class
-com\coursework\view\MainFrameListener.class
 com\coursework\service\FileService.class
 com\coursework\model\DateLecture.class
 com\coursework\model\Student.class
